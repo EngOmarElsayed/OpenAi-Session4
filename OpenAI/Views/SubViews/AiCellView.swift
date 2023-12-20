@@ -34,7 +34,7 @@ struct AiCellView: View {
                     }
                 
             }
-            if !viewModel.isTypingAnimation || !viewModel.isloading {
+            if !viewModel.isTypingAnimation && !viewModel.isloading {
                 HStack {
                     Spacer()
                     Image(systemName: isCopyPresed ? "checkmark": "doc.on.doc")
