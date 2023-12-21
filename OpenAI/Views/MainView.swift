@@ -53,6 +53,9 @@ struct MainView: View {
                 })
             }
         })
+        .task {
+           await viewModel.LoadChats()
+        }
     }
 }
 

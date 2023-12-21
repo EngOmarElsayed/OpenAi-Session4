@@ -32,21 +32,33 @@ struct SubMenuConversionsView: View {
             VStack(alignment:.leading, spacing: 25){
                 ForEach(vm.conversations) { con in
                     let isPressed = vm.selectedConversation.id == con.id
-                    Button {
-                        vm.SwitchConversion(to: con)
-                        DispatchQueue.main.asyncAfter(deadline: .now()+0.3){
-                            withAnimation(.default){
-                                isPresented = false
+                    HStack {
+                        Button {
+                            vm.SwitchConversion(to: con)
+                            DispatchQueue.main.asyncAfter(deadline: .now()+0.3){
+                                withAnimation(.default){
+                                    isPresented = false
+                                }
                             }
-                        }
-                    } label: {
-                        Text("\(con.title)")
-                            .foregroundStyle(.colorThem)
-                            .lineLimit(1)
-                            .padding(.trailing,80)
-                            .multilineTextAlignment(.leading)
-                            .fontWeight(.medium)
-                    }.disabled(isPressed)
+                        } label: {
+                            Text("\(con.title)")
+                                .foregroundStyle(.colorThem)
+                                .lineLimit(1)
+                                .padding(.trailing,80)
+                                .multilineTextAlignment(.leading)
+                                .fontWeight(.medium)
+                        }.disabled(isPressed)
+                        Spacer()
+                        Button(action: {
+                            Task{
+                              await vm.DeletThis(chat: con.id)
+                            }
+                        }, label: {
+                            Image(systemName: "trash")
+                                .foregroundStyle(.red)
+                                .scaleEffect(x: 0.8, y: 0.8)
+                        })
+                    }.frame(width: screenWidth*0.6)
                 }
             }
         }

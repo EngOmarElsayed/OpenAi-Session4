@@ -15,14 +15,21 @@ import Foundation
     @Published var selectedConversation: Conversion = Conversion(chat: [])
     @Published var conversations: [Conversion] = []
     @Published var isTypingAnimation = false
-
+    
+    var Index: Int {
+        conversations.firstIndex(where: {$0.id == selectedConversation.id }) ?? 0
+    }
+    
     var lastIndex: Int {
         selectedConversation.chat.count-1
     }
     
-    let apiManger = APiManger.shared
+   private let apiManger = APiManger.shared
+   private let fileDataManger = DataManger.shared
 }
 
+
+//- MARK: public functions
 extension OpenAIViewModel {
     func welcomeAnimation() {
         TypoAnimation(for: "How Can I help you today ?", isWelcome: true)
@@ -47,6 +54,27 @@ extension OpenAIViewModel {
     
 }
 
+//- MARK: Data functions
+
+extension OpenAIViewModel {
+    
+    func LoadChats() async {
+      conversations = await fileDataManger.load() ?? conversations
+    }
+    
+    func SaveChat() async {
+        conversations[Index] = selectedConversation
+       await fileDataManger.save(this: conversations)
+    }
+    
+    func DeletThis(chat id: UUID) async {
+        conversations.removeAll(where: {$0.id == id})
+        await fileDataManger.save(this: conversations)
+    }
+    
+}
+
+//- MARK: Api request functions
 extension OpenAIViewModel {
     
     func sendMessage() async throws {
@@ -57,6 +85,7 @@ extension OpenAIViewModel {
         response = ""
         isloading = true
         try await sendApiMessage()
+        await SaveChat()
     }
     
    private func sendApiMessage() async throws {
@@ -81,6 +110,7 @@ extension OpenAIViewModel {
     
 }
 
+//- MARK: Typing Animation
 extension OpenAIViewModel {
     
     private func TypoAnimation(for text: String, isWelcome: Bool) {
@@ -88,13 +118,12 @@ extension OpenAIViewModel {
         var typingSpeed = 0.02
         let loopOn = text+" "
         
-        isTypingAnimation = true
-        
         if isWelcome {
             welcomeText = ""
             typingSpeed = 0.08
+        }else {
+            isTypingAnimation = true
         }
-        welcomeText = isWelcome ? "": welcomeText
         
         for letter in loopOn {
             Timer.scheduledTimer(withTimeInterval: typingSpeed*charindex, repeats: false) { timer in
